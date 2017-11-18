@@ -13,26 +13,28 @@ function P = HowManyPercent(TargetGrade,StudentResults, Boundaries, MaxPoints,Po
   end   
   
   # Just fourth "imaginary" boundary
-  Boundaries = [Boundaries,0]
+  Boundaries = [Boundaries,0];
   
-  # Compute total points, assuming student got 0 from the final test
-  S = arrayfun(@(score) ComputePoints([cell2mat(score)(1),cell2mat(score)(2),0],MaxPoints, PointsWeight), StudentResults);
-  tmp=S;
+  # Compute total points gained so far (i.e. assuming student got 0 from the final test)
+  getPointsWithoutTest = @(score) ComputePoints([cell2mat(score)(1),cell2mat(score)(2),0],MaxPoints, PointsWeight);
+  pointsWithoutTest = arrayfun(getPointsWithoutTest, StudentResults);
   
   # For each of the values compute difference from the desired grade  
-  for i=1:length(S)
-    tmp(i) = Boundaries(TargetGrade(i))-tmp(i);
+  remainingPoints = pointsWithoutTest;
+  for i=1:length(pointsWithoutTest)
+    remainingPoints(i) = Boundaries(TargetGrade(i))-pointsWithoutTest(i);
     
     # Student is under the limit (i.e. wants 4 and has some points)
-    if (tmp(i)< 0) 
-      tmp(i)=0;
+    if (remainingPoints(i)< 0) 
+      remainingPoints(i)=0;
     end  
     
     # Student is over the limit (i.e. has too few points)
-    if (tmp(i) > MaxExamScore)
-      tmp(i)=NaN;
+    if (remainingPoints(i) > MaxExamScore)
+      remainingPoints(i)=NaN;
+    end  
   end  
   
   # return
-  P=tmp;
+  P=remainingPoints;
 end  
